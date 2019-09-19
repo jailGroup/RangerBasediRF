@@ -5,7 +5,7 @@ Ashley Cliff and Jonathon Romero
 Iterative Random Forest (iRF) is an improvement upon the classic Random Forest, using weighted iterations to distill the forests. Ranger is a C++ implementation of random forest (Breiman 2001) or recursive partitioning, particularly suited for high dimensional data. Ranger-Based iRF uses Ranger as a base Random Forest codebase upon which iterative and scalability aspects have been added.
 
 ### Installation
-To install in Linux or Mac OS X you will need a compiler supporting C++11 (i.e. gcc >= 4.7 or Clang >= 3.0) and Cmake. You will also, currently, need to have the Open-MPI libraries installed, even if you do not wish to use the MPI version. To build start a terminal from the iRF main directory and run the following commands
+To install in Linux or Mac OS X you will need a compiler supporting C++11 (i.e. gcc >= 4.7 or Clang >= 3.0) and Cmake. You will also, currently, need to have the Open-MPI libraries installed, even if you do not wish to use the MPI version. To build, start a terminal from the iRF main directory and run the following commands:
 
 ```bash
 cd cpp_version
