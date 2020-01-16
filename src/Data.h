@@ -113,6 +113,9 @@ public:
 
   void sort();
 
+  void threadedSort(int num_threads);
+  void threadedSortLoop(int thread_index, int num_threads, std::vector<std::vector<double>>& unique_data_values_tmp);
+
   const std::vector<std::string>& getVariableNames() const {
     return variable_names;
   }

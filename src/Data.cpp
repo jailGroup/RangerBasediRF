@@ -31,6 +31,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iterator>
+#include <thread>
 
 #include "Data.h"
 #include "utility.h"
@@ -262,4 +263,69 @@ void Data::sort() {
       max_num_unique_values = unique_values.size();
     }
   }
+}
+
+
+void Data::threadedSort(int num_threads) {
+  index_data = new size_t[num_cols_no_snp * num_rows];
+  std::vector<std::vector<double>> unique_data_values_tmp(num_cols_no_snp);
+
+  std::vector<std::thread> threads;
+  threads.reserve(num_threads);
+  //std::cout << "Starting sort thread loop\n" << std::flush;
+  for (int thread_index = 0; thread_index < num_threads; thread_index++){
+    threads.push_back(std::thread(&Data::threadedSortLoop, this, thread_index, num_threads, std::ref(unique_data_values_tmp)));
+  }
+  //std::cout << "After sort thread loop, before join\n" << std::flush;
+  for (auto &thread : threads) {
+    thread.join();
+  }
+  for (int i = 0; i < num_cols_no_snp; i++){
+    unique_data_values.push_back(unique_data_values_tmp[i]);
+    if (unique_data_values_tmp[i].size() > max_num_unique_values) {
+      max_num_unique_values = unique_data_values_tmp[i].size();
+    }
+    //std::cout << "unique data col: " << i << " size: " << unique_data_values[i].size() << "\n" << std::flush;
+  }
+
+}
+
+void Data::threadedSortLoop(int thread_index, int num_threads, std::vector<std::vector<double>>& unique_data_values_tmp){
+  int totalCols = num_cols_no_snp;
+  int colsPerThreadWhole = totalCols / num_threads;
+  int colsPerThreadRemainder = totalCols % num_threads;
+  int colStartLocation = thread_index * colsPerThreadWhole;
+  int colStopLocation;
+  if (thread_index == num_threads-1){
+    colStopLocation = totalCols;
+  }
+  else{
+    colStopLocation = colStartLocation + colsPerThreadWhole;
+  }
+  //std::cout << "In thread: " << thread_index << ", before col loop\n" << std::flush;
+  for (int col = colStartLocation; col < colStopLocation; col++){
+    std::vector<double> unique_values(num_rows);
+    for (size_t row = 0; row < num_rows; ++row) {
+      unique_values[row] = get(row, col);
+    }
+
+    std::sort(unique_values.begin(), unique_values.end());
+
+    //std::cout << "In thread: " << thread_index << ", in col: " << col << " after sort\n" << std::flush;
+
+    unique_values.erase(unique(unique_values.begin(), unique_values.end()), unique_values.end());
+
+    for (size_t row = 0; row < num_rows; ++row) {
+      size_t idx = std::lower_bound(unique_values.begin(), unique_values.end(), get(row, col)) - unique_values.begin();
+      //std::cout << "In thread: " << thread_index << ", in col: " << col << " before index_data\n" << std::flush;
+      index_data[col * num_rows + row] = idx;
+      //std::cout << "In thread: " << thread_index << ", in col: " << col << " after index_data\n" << std::flush;
+    }
+    unique_data_values_tmp[col] = unique_values;
+    //if (unique_values.size() > max_num_unique_values) {
+    //  max_num_unique_values = unique_values.size();
+    //}
+    //std::cout << "In thread: " << thread_index << ", in col: " << col << "\n" << std::flush;
+  }
+
 }
