@@ -1195,20 +1195,6 @@ int main(int argc, char **argv) {
 			forest2->writeOutput();
 			*verbose_out << "Finished Ranger." << std::endl;
 
-			if (rank == 0){
-				newForest->verbose_out = verbose_out;
-				newForest->output_prefix = arg_handler.outprefix;
-				newForest->predictions = forest->getPredictions();
-				newForest->importance_mode = arg_handler.impmeasure;
-				newForest->data = oldForestData;
-				std::cout << "In main, before setting split vars\n" << std::flush;
-				newForest->data->no_split_variables = oldForestData->no_split_variables;
-				std::cout << "In main, after setting split vars, before size\n";
-				newForest->outputDirectory = arg_handler.outputDirectory;
-
-				std::cout << "In main, splitVar size: " << oldForestData->no_split_variables.size() << '\n' << std::flush;
-				newForest->writeOutputNewForest(0);
-			}
 
 			if (rank == 0){
 				newForest->verbose_out = verbose_out;
