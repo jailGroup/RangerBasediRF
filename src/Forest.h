@@ -97,11 +97,11 @@ void initData(std::string dependent_variable_name, MemoryMode memory_mode, Data*
 
   // Write results to output files
   void writeOutput();
-  void writeOutputNewForest(int loop);
+  void writeOutputNewForest();
   virtual void writeOutputInternal() = 0;
   virtual void writeConfusionFile() = 0;
   virtual void writePredictionFile(int rank) = 0;
-  void writeImportanceFile(int loop);
+  void writeImportanceFile();
   void writeSplitWeightsFile(std::string outputPrefix);
 
   // Save forest to file

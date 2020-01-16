@@ -76,8 +76,7 @@ void ForestRegression::initInternal(std::string status_variable_name) {
   std::cout << "In initInternal, after setting min node size\n" << std::flush;
   // Sort data if memory saving mode
   if (!memory_saving_splitting) {
-    //data->sort();
-    data->threadedSort(num_threads);
+    data->sort();
   }
   std::cout << "In initInternal, after data sort\n" << std::flush;
 }

@@ -133,16 +133,11 @@ double TreeRegression::computePredictionAccuracyInternal() {
   for (size_t i = 0; i < num_predictions; ++i) {
     size_t terminal_nodeID = prediction_terminal_nodeIDs[i];
     double predicted_value = split_values[terminal_nodeID];
-    //std::cout << "predicted_value: " << predicted_value << '\n';
     double real_value = data->get(oob_sampleIDs[i], dependent_varID);
-    //std::cout << "real_value: " << real_value << '\n';
     if (predicted_value != real_value) {
       sum_of_squares += (predicted_value - real_value) * (predicted_value - real_value);
-      //std::cout << "sum_of_squares: " << sum_of_squares << '\n';
     }
   }
-  //std::cout << "num_predictions: " << num_predictions << '\n';
-  //std::cout << "num_predictions (double): " << (double) num_predictions << '\n';
   return (1.0 - sum_of_squares / (double) num_predictions);
 }
 
@@ -278,7 +273,6 @@ void TreeRegression::findBestSplitValueLargeQ(size_t nodeID, size_t varID, doubl
 
   // Set counters to 0
   size_t num_unique = data->getNumUniqueDataValues(varID);
-  
   std::fill(counter, counter + num_unique, 0);
   std::fill(sums, sums + num_unique, 0);
 

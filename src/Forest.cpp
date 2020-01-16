@@ -644,7 +644,7 @@ void Forest::initData(std::string dependent_variable_name, MemoryMode memory_mod
   }
 
   // Permute samples for corrected Gini importance
-  //std::cout << "In initData, before importance_mode check\n" << std::flush;
+  //std::cout << "In initData, before importancce_mode check\n" << std::flush;
   if (importance_mode == IMP_GINI_CORRECTED) {
     data->permuteSampleIDs(random_number_generator);
   }
@@ -727,7 +727,7 @@ void Forest::writeOutput() {
 //   }
  }
 
-void Forest::writeOutputNewForest(int loop) {
+void Forest::writeOutputNewForest() {
     std::cout << "In writeoutput New Forest\n" << std::flush;
     if (prediction_mode) {
       //writePredictionFile(rank);
@@ -742,7 +742,7 @@ void Forest::writeOutputNewForest(int loop) {
       //}
       std::cout << "In writeOutputNewForest, right before write Importance\n" << std::flush;
       if (importance_mode != IMP_NONE) {
-        writeImportanceFile(loop);
+        writeImportanceFile();
       }
       std::cout << "In writeOutputNewForest, right before write Confusion\n" << std::flush;
       //writeConfusionFile();
@@ -750,11 +750,11 @@ void Forest::writeOutputNewForest(int loop) {
     }
 }
 
-void Forest::writeImportanceFile(int loop) {
+void Forest::writeImportanceFile() {
   std::cout << "In writeImportance, called from writeOutputNewForest \n" << std::flush;
   // Open importance file for writing
   std::string directory = outputDirectory;
-  std::string filename = directory + "/" + output_prefix + ".importance" + std::to_string(loop);
+  std::string filename = directory + "/" + output_prefix + ".importance";
   std::cout << "Filename: " << filename << "\n";
   std::string rankStr = std::to_string(rank);
   std::ofstream importance_file;
@@ -1133,7 +1133,6 @@ void Forest::computePermutationImportance() {
   std::vector<std::vector<double>> variance_threads(num_threads);
 
 // Compute importance
-  //std::cout << "Compute Importance in computePermutationImportance \n";
   for (uint i = 0; i < num_threads; ++i) {
     variable_importance_threads[i].resize(num_independent_variables, 0);
     if (importance_mode == IMP_PERM_BREIMAN || importance_mode == IMP_PERM_LIAW) {
@@ -1143,7 +1142,6 @@ void Forest::computePermutationImportance() {
         std::thread(&Forest::computeTreePermutationImportanceInThread, this, i, &(variable_importance_threads[i]),
             &(variance_threads[i])));
   }
-  //std::cout << "Before show progress, computing permutation importance \n";
   showProgress("Computing permutation importance..");
   for (auto &thread : threads) {
     thread.join();
@@ -1160,7 +1158,6 @@ void Forest::computePermutationImportance() {
   for (size_t i = 0; i < num_independent_variables; ++i) {
     for (uint j = 0; j < num_threads; ++j) {
       variable_importance[i] += variable_importance_threads[j][i];
-      //std::cout << "Building Var importance[i]: " << variable_importance[i] << '\n';
     }
   }
   variable_importance_threads.clear();
@@ -1178,25 +1175,16 @@ void Forest::computePermutationImportance() {
 #endif
 
   for (size_t i = 0; i < variable_importance.size(); ++i) {
-    //std::cout << "Orig. orig. Var importance[i]: " << variable_importance[i] << '\n';
     variable_importance[i] /= num_trees;
 
     // Normalize by variance for scaled permutation importance
     if (importance_mode == IMP_PERM_BREIMAN || importance_mode == IMP_PERM_LIAW) {
       if (variance[i] != 0) {
-        //std::cout << "Variance[i]: " << variance[i] << '\n';
         variance[i] = variance[i] / num_trees - variable_importance[i] * variable_importance[i];
-        //std::cout << "Variance[i]: " << variance[i] << '\n';
-        //std::cout << "Num_trees: " << num_trees << '\n';
-        //std::cout << "Orig. Var importance[i]: " << variable_importance[i] << '\n';
-        //std::cout << "Sqrt(variance[i] / num_trees): " << sqrt(variance[i] / num_trees);
         variable_importance[i] /= sqrt(variance[i] / num_trees);
-
-        //std::cout << "Variable importance value for i:" << i << "  " << variable_importance[i] << '\n';
       }
     }
   }
-  //std::cout << "Finished permutation importance \n";
 }
 
 #ifndef OLD_WIN_R_BUILD
