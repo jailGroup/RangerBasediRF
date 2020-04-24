@@ -57,6 +57,12 @@ enum TreeType {
   TREE_PROBABILITY = 9
 };
 
+// Mtry Function types
+enum MtryType {
+  MTRY_SQRT = 1,
+  MTRY_0_2 = 2
+};
+
 // Memory modes
 enum MemoryMode {
   MEM_DOUBLE = 0,
