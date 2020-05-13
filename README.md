@@ -11,7 +11,7 @@ To install in Linux or Mac OS X you will need a compiler supporting C++11 (i.e. 
 cd cpp_version
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_CXX_COMPILER=mpiCC -DCMAKE_C_COMPILER=mpicc ..
 make
 ```
 
