@@ -107,6 +107,62 @@ bool Data::loadFromFile(std::string filename) {
   return result;
 }
 
+// #nocov start
+bool Data::loadFromXYFiles(std::string xfilename, std::string yfilename) {
+
+  bool result;
+
+  std::cout << "using both x and y files" << std::endl;
+
+  // Open input file
+  std::ifstream x_input_file;
+  std::ifstream y_input_file;
+  y_input_file.open(yfilename);
+  if (!y_input_file.good()) {
+    throw std::runtime_error("Could not open y file.");
+  }
+
+  // Count number of rows
+  size_t line_count = 0;
+  std::string line;
+  while (getline(y_input_file, line)) {
+    ++line_count;
+  }
+  num_rows = line_count - 1;
+  y_input_file.close();
+
+  x_input_file.open(xfilename);
+  y_input_file.open(yfilename);
+
+  // Check if comma, semicolon or whitespace seperated
+  std::string header_line;
+  getline(x_input_file, header_line);
+  std::string yheader;
+  getline(y_input_file, yheader);
+
+  //std::cout << "Header line: " << header_line << '\n';
+
+  // Find out if comma, semicolon or whitespace seperated and call appropriate method
+  if (header_line.find(",") != std::string::npos) {
+    if (header_line.back() == ',') { header_line = header_line + yheader; }
+    else { header_line = header_line + ',' + yheader; }
+    result = loadFromXYFileOther(x_input_file, y_input_file, header_line, ',');
+  } else if (header_line.find(";") != std::string::npos) {
+    if (header_line.back() == ';') { header_line = header_line + yheader; }
+    else { header_line = header_line + ';' + yheader; }
+    result = loadFromXYFileOther(x_input_file, y_input_file, header_line, ';');
+  } else {
+    if (isspace(header_line.back())) { header_line = header_line + yheader; }
+    else { header_line = header_line + '\t' + yheader; }
+    result = loadFromXYFileWhitespace(x_input_file, y_input_file, header_line);
+  }
+
+  externalData = false;
+  x_input_file.close();
+  y_input_file.close();
+  return result;
+}
+
 bool Data::loadFromFileWhitespace(std::ifstream& input_file, std::string header_line) {
 
   // Read header
@@ -166,6 +222,87 @@ bool Data::loadFromFileOther(std::ifstream& input_file, std::string header_line,
     std::string token_string;
     double token;
     std::stringstream line_stream(line);
+    size_t column = 0;
+    while (getline(line_stream, token_string, seperator)) {
+      std::stringstream token_stream(token_string);
+      token_stream >> token;
+      set(column, row, token, error);
+      ++column;
+    }
+    ++row;
+  }
+  num_rows = row;
+  return error;
+}
+// #nocov end
+
+bool Data::loadFromXYFileWhitespace(std::ifstream& x_input_file, std::ifstream& y_input_file, std::string header_line) {
+
+  // Read header
+  std::string header_token;
+  std::stringstream header_line_stream(header_line);
+  while (header_line_stream >> header_token) {
+    variable_names.push_back(header_token);
+    //std::cout << "header_token: " << header_token << '\n';
+    //std::cout << std::flush;
+  }
+  num_cols = variable_names.size();
+  std::cout << "In Data, num Cols: " << num_cols << '\n';
+  std::cout << std::flush;
+  num_cols_no_snp = num_cols;
+
+  // Read body
+  reserveMemory();
+  bool error = false;
+  std::string xline;
+  std::string yline;
+  size_t row = 0;
+  while (getline(x_input_file, xline) && getline(y_input_file, yline)) {
+    double token;
+    std::stringstream line_stream;
+    if (isspace(xline.back())) { line_stream << xline << yline; }
+    else { line_stream << xline << "\t" << yline; }
+    size_t column = 0;
+    while (line_stream >> token) {
+      set(column, row, token, error);
+      ++column;
+    }
+    if (column > num_cols) {
+      throw std::runtime_error("Could not open input file. Too many columns in a row.");
+    } else if (column < num_cols) {
+      throw std::runtime_error("Could not open input file. Too few columns in a row. Are all values numeric?");
+    }
+    ++row;
+  }
+  num_rows = row;
+  return error;
+}
+
+bool Data::loadFromXYFileOther(std::ifstream& x_input_file, std::ifstream& y_input_file, std::string header_line, char seperator) {
+
+  // Read header
+  std::string header_token;
+  std::stringstream header_line_stream(header_line);
+  while (getline(header_line_stream, header_token, seperator)) {
+    variable_names.push_back(header_token);
+  }
+  num_cols = variable_names.size();
+  num_cols_no_snp = num_cols;
+
+  // Read body
+  reserveMemory();
+  bool error = false;
+  std::string xline;
+  std::string yline;
+  size_t row = 0;
+  while (getline(x_input_file, xline) && getline(y_input_file, yline)) {
+    std::stringstream line_stream;
+    std::string token_string;
+    double token;
+    if (xline.back() == seperator) { line_stream << xline << yline; }
+    else { 
+      line_stream << xline << seperator << yline;
+    }
     size_t column = 0;
     while (getline(line_stream, token_string, seperator)) {
       std::stringstream token_stream(token_string);

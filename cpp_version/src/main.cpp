@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
 				startInit = std::chrono::system_clock::now();
 
 
-				forest->initCpp(arg_handler.depvarname, arg_handler.memmode, arg_handler.file, arg_handler.mtry, arg_handler.mtryType,
+				forest->initCpp(arg_handler.depvarname, arg_handler.memmode, arg_handler.file, arg_handler.yfile, arg_handler.mtry, arg_handler.mtryType,
 					arg_handler.outprefix, arg_handler.ntree, verbose_out, arg_handler.seed, arg_handler.nthreads,
 					arg_handler.predict, arg_handler.impmeasure, arg_handler.targetpartitionsize, arg_handler.splitweights,
 					arg_handler.alwayssplitvars, arg_handler.statusvarname, arg_handler.replace, arg_handler.catvars,
@@ -643,6 +643,9 @@ int main(int argc, char **argv) {
 
 				std::cout << "In main, splitVar size: " << oldForestData->no_split_variables.size() << '\n' << std::flush;
 				newForest->writeOutputNewForest(0);
+				if (arg_handler.write) {
+					newForest->saveToFile(0);
+				}
 			}
     	*verbose_out << "Finished Ranger." << std::endl;
 
@@ -752,7 +755,7 @@ int main(int argc, char **argv) {
 
 					//Grab data from previous run rather than reading in again
 					std::string weightFile = arg_handler.outputDirectory + "/" + arg_handler.outprefix + ".splitWeights";
-					forest2->initCppData(arg_handler.depvarname, arg_handler.memmode, arg_handler.file, arg_handler.mtry, arg_handler.mtryType,
+					forest2->initCppData(arg_handler.depvarname, arg_handler.memmode, arg_handler.file, arg_handler.yfile, arg_handler.mtry, arg_handler.mtryType,
 						arg_handler.outprefix, arg_handler.ntree, verbose_out, arg_handler.seed, arg_handler.nthreads,
 						arg_handler.predict, arg_handler.impmeasure, arg_handler.targetpartitionsize, weightFile,
 						arg_handler.alwayssplitvars, arg_handler.statusvarname, arg_handler.replace, arg_handler.catvars,
@@ -1585,8 +1588,11 @@ int main(int argc, char **argv) {
 			verbose_time = timefile;
 		}
 
+			std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
+			startTime = std::chrono::system_clock::now();
+
     	*verbose_out << "Starting Ranger." << std::endl;
-    	forest->initCpp(arg_handler.depvarname, arg_handler.memmode, arg_handler.file, arg_handler.mtry, arg_handler.mtryType,
+    	forest->initCpp(arg_handler.depvarname, arg_handler.memmode, arg_handler.file, arg_handler.yfile, arg_handler.mtry, arg_handler.mtryType,
         	arg_handler.outprefix, arg_handler.ntree, verbose_out, arg_handler.seed, arg_handler.nthreads,
         	arg_handler.predict, arg_handler.impmeasure, arg_handler.targetpartitionsize, arg_handler.splitweights,
         	arg_handler.alwayssplitvars, arg_handler.statusvarname, arg_handler.replace, arg_handler.catvars,
@@ -1601,6 +1607,10 @@ int main(int argc, char **argv) {
     	forest->writeOutput();
     	*verbose_out << "Finished Ranger." << std::endl;
 
+			endTime = std::chrono::system_clock::now();
+			std::chrono::duration<double> elapsedTime = endTime - startTime;
+			time_t tt = std::chrono::system_clock::to_time_t(endTime);
+			*verbose_time << "Total run time: " << elapsedTime.count() << "s." << std::endl;
     	delete forest;
   }
   catch (std::exception& e) {

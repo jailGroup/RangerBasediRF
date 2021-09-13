@@ -84,6 +84,7 @@ public:
   double minprop;
   std::vector<std::string> catvars;
   std::string file;
+  std::string yfile;
   ImportanceMode impmeasure;
   uint targetpartitionsize;
   uint mtry;

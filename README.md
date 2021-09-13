@@ -1,23 +1,55 @@
-## Ranger-Based iterative Random Forest
-Ashley Cliff and Jonathon Romero
+[![Travis Build Status](https://travis-ci.org/imbs-hl/ranger.svg?branch=master)](https://travis-ci.org/imbs-hl/ranger)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/imbs-hl/ranger?branch=master&svg=true)](https://ci.appveyor.com/project/mnwright/ranger)
+[![Coverage Status](https://coveralls.io/repos/github/imbs-hl/ranger/badge.svg?branch=master)](https://coveralls.io/github/imbs-hl/ranger?branch=master)
+![CRAN Downloads month](http://cranlogs.r-pkg.org/badges/ranger?color=brightgreen)
+![CRAN Downloads overall](http://cranlogs.r-pkg.org/badges/grand-total/ranger?color=brightgreen)
+## ranger: A Fast Implementation of Random Forests
+Marvin N. Wright
 
 ### Introduction
-Iterative Random Forest (iRF) is an improvement upon the classic Random Forest, using weighted iterations to distill the forests. Ranger is a C++ implementation of random forest (Breiman 2001) or recursive partitioning, particularly suited for high dimensional data. Ranger-Based iRF uses Ranger as a base Random Forest codebase upon which iterative and scalability aspects have been added.
+ranger is a fast implementation of random forest (Breiman 2001) or recursive partitioning, particularly suited for high dimensional data. Classification, regression, probability estimation and survival forests are supported. Classification and regression forests are implemented as in the original Random Forest (Breiman 2001), survival forests as in Random Survival Forests (Ishwaran et al. 2008). For probability estimation forests see Malley et al. (2012). 
+
+ranger is written in C++, but a version for R is available, too. We recommend to use the R version. It is easy to install and use and the results are readily available for further analysis. The R version is as fast as the standalone C++ version.
 
 ### Installation
-To install in Linux or Mac OS X you will need a compiler supporting C++11 (i.e. gcc >= 4.7 or Clang >= 3.0) and Cmake. You will also, currently, need to have the Open-MPI libraries installed, even if you do not wish to use the MPI version. To build, start a terminal from the iRF main directory and run the following commands:
+#### R version
+To install the ranger R package from CRAN, just run
+
+```R
+install.packages("ranger")
+```
+
+R version >= 3.1 is required. With recent R versions, multithreading on Windows platforms should just work. If you compile yourself, the new RTools toolchain is required.
+
+To install the development version from GitHub using `devtools`, run
+
+```R
+devtools::install_github("imbs-hl/ranger")
+```
+
+#### Standalone C++ version
+To install the C++ version of ranger in Linux or Mac OS X you will need a compiler supporting C++11 (i.e. gcc >= 4.7 or Clang >= 3.0) and Cmake. To build start a terminal from the ranger main directory and run the following commands
 
 ```bash
 cd cpp_version
 mkdir build
 cd build
-cmake -DCMAKE_CXX_COMPILER=mpiCC -DCMAKE_C_COMPILER=mpicc ..
+cmake ..
 make
 ```
 
 After compilation there should be an executable called "ranger" in the build directory. 
 
+To run the C++ version in Microsoft Windows please cross compile or ask for a binary.
+
 ### Usage
+#### R version
+For usage of the R version see ?ranger in R. Most importantly, see the Examples section. As a first example you could try 
+
+```R  
+ranger(Species ~ ., data = iris)
+```
+
 #### Standalone C++ version
 In the C++ version type 
 
@@ -25,19 +57,20 @@ In the C++ version type
 ranger --help 
 ```
 
-for a list of commands. First you need a training dataset in a file. This file should contain one header line with variable names and one line with variable values per sample. Variable names must not contain any whitespace, comma or semicolon. Values can be seperated by whitespace, comma or semicolon but can not be mixed in one file. The 'useMPI' flag must be used, followed by a 0 (NO) or a 1 (YES). Similarly, for the 'printPathfile' flag (however currently inverted, 0 is YES and 1 is NO). The 'numIterations' flag specifies the number of iterations; the flag and value are required and a typical default value to use would be 5. The 'outputDirectory' flag should be followed by the full path to the directory where any output will be written to, include log files and pathfiles (Do not include the trailing '/' at the end of the path). The 'outprefix' flag should be followed by the term that will be used as the name of each output file. A typical call would be for example
+for a list of commands. First you need a training dataset in a file. This file should contain one header line with variable names and one line with variable values per sample. Variable names must not contain any whitespace, comma or semicolon. Values can be seperated by whitespace, comma or semicolon but can not be mixed in one file. A typical call of ranger would be for example
 
 ```bash
-ranger  --file data.txt --depvarname Species --treetype 1 --ntree 1000 --nthreads 4 --useMPI 1 --numIterations 5 --outputDirectory /Users/user/Desktop -outprefix testRun --printPathfile 0
+ranger --verbose --file data.dat --depvarname Species --treetype 1 --ntree 1000 --nthreads 4
 ```
 
-The ntree flag denotes the number of trees to create Per Compute Node.
+If you find any bugs, or if you experience any crashes, please report to us. If you have any questions just ask, we won't bite. 
 
-It is not possible to do prediction with the useMPI flag at 1, and you will receive an error message if you try. As prediction does not require building trees, a single compute node (from a HPC system) is sufficient.
-
-This is a beta code release, so there may be bugs and issues to work out. If you find any bugs or have any issues using the code, please talk to us and we will be glad to help. 
+Please cite our paper if you use ranger.
 
 ### References
-* Basu, S., Kumbier, K., Brown, J. B. & Yu, B. Iterative random forests to discover predictive and stable high-order interactions. Proc. Natl. Acad. Sci. U. S. A. 115, 1943–1948 (2018).
 * Wright, M. N. & Ziegler, A. (2017). ranger: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. Journal of Statistical Software 77:1-17. http://dx.doi.org/10.18637/jss.v077.i01.
-
+* Schmid, M., Wright, M. N. & Ziegler, A. (2016). On the use of Harrell’s C for clinical risk prediction via random survival forests. Expert Systems with Applications 63:450-459. http://dx.doi.org/10.1016/j.eswa.2016.07.018.
+* Wright, M. N., Dankowski, T. & Ziegler, A. (2017). Unbiased split variable selection for random survival forests using maximally selected rank statistics. Statistics in Medicine. http://dx.doi.org/10.1002/sim.7212.
+* Breiman, L. (2001). Random forests. Machine learning 45:5-32.
+* Ishwaran, H., Kogalur, U. B., Blackstone, E. H., & Lauer, M. S. (2008). Random survival forests. The Annals of Applied Statistics 2:841-860.
+* Malley, J. D., Kruppa, J., Dasgupta, A., Malley, K. G., & Ziegler, A. (2012). Probability machines: consistent probability estimation using nonparametric learning machines. Methods of Information in Medicine 51:74-81.

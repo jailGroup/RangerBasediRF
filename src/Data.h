@@ -54,6 +54,9 @@ public:
   bool loadFromFile(std::string filename);
   bool loadFromFileWhitespace(std::ifstream& input_file, std::string header_line);
   bool loadFromFileOther(std::ifstream& input_file, std::string header_line, char seperator);
+  bool loadFromXYFiles(std::string xfilename, std::string yfilename);
+  bool loadFromXYFileWhitespace(std::ifstream& x_input_file, std::ifstream& y_input_file, std::string header_line);
+  bool loadFromXYFileOther(std::ifstream& x_input_file, std::ifstream& y_input_file, std::string header_line, char seperator);
   std::vector<size_t> no_split_variables;
   void getAllValues(std::vector<double>& all_values, std::vector<size_t>& sampleIDs, size_t varID);
   void getAllValuesTotal(std::vector<double>& all_values, std::vector<size_t>& sampleIDs, size_t varID);

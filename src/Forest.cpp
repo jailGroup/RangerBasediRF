@@ -64,7 +64,7 @@ Forest::~Forest() {
 }
 
 // #nocov start
-void Forest::initCpp(std::string dependent_variable_name, MemoryMode memory_mode, std::string input_file, uint mtry, MtryType mtryType,
+void Forest::initCpp(std::string dependent_variable_name, MemoryMode memory_mode, std::string input_file, std::string y_file, uint mtry, MtryType mtryType,
     std::string output_prefix, uint num_trees, std::ostream* verbose_out, uint seed, uint num_threads,
     std::string load_forest_filename, ImportanceMode importance_mode, uint min_node_size,
     std::string split_select_weights_file, std::vector<std::string>& always_split_variable_names,
@@ -104,7 +104,12 @@ void Forest::initCpp(std::string dependent_variable_name, MemoryMode memory_mode
           //for (int i = 0; i < size; i++){
             //MPI_Barrier(MPI_COMM_WORLD);
             //if (i == rank){
+        if (y_file.empty()) {
               rounding_error = data->loadFromFile(input_file);
+        }
+        else {
+              rounding_error = data->loadFromXYFiles(input_file, y_file);
+        }
             //}
           //}
         //}
@@ -215,7 +220,7 @@ void Forest::initCpp(std::string dependent_variable_name, MemoryMode memory_mode
       bool isZero (double i) {return (i!=0.0);}
 
 
-      void Forest::initCppData(std::string dependent_variable_name, MemoryMode memory_mode, std::string input_file, uint mtry, MtryType mtryType,
+      void Forest::initCppData(std::string dependent_variable_name, MemoryMode memory_mode, std::string input_file, std::string y_file, uint mtry, MtryType mtryType,
           std::string output_prefix, uint num_trees, std::ostream* verbose_out, uint seed, uint num_threads,
           std::string load_forest_filename, ImportanceMode importance_mode, uint min_node_size,
           std::string split_select_weights_file, std::vector<std::string>& always_split_variable_names,
